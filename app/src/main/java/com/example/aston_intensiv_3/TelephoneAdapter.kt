@@ -2,32 +2,40 @@ package com.example.aston_intensiv_3
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.aston_intensiv_3.data.TelephoneData
 
 
-class TelephoneAdapter(val data: MutableList<TelephoneData>) :
-    RecyclerView.Adapter<TelephoneAdapter.TelephoneViewHolder>() {
+class TelephoneAdapter(private val fragmentManager: FragmentManager) :
+    ListAdapter<TelephoneData, TelephoneAdapter.TelephoneViewHolder>(TelephoneDiffUtil()) {
     var isOnDeleteMode: Boolean = false
 
     inner class TelephoneViewHolder(view: View) : ViewHolder(view) {
-        val id: TextView
-        val name: TextView
-        val surname: TextView
-        val number: TextView
-        var isSelected: Boolean = false
+        private val id: TextView
+        private val name: TextView
+        private val surname: TextView
+        private val number: TextView
+        private var isSelected: Boolean = false
 
         init {
             id = view.findViewById(R.id.id)
             name = view.findViewById(R.id.personName)
             surname = view.findViewById(R.id.surname)
             number = view.findViewById(R.id.number)
+        }
+
+        fun bind(data: TelephoneData){
+            id.text = data.id.toString()
+            name.text = data.personData.name
+            surname.text = data.personData.surname
+            number.text = data.personData.telephoneNumber
+            isSelected = data.isSelected
         }
     }
 
@@ -37,26 +45,22 @@ class TelephoneAdapter(val data: MutableList<TelephoneData>) :
         return TelephoneViewHolder(view)
     }
 
-    override fun getItemCount(): Int = data.size
-
     override fun onBindViewHolder(holder: TelephoneViewHolder, position: Int) {
-        holder.id.text = data[position].id.toString()
-        holder.name.text = data[position].personData.name
-        holder.surname.text = data[position].personData.surname
-        holder.number.text = data[position].personData.telephoneNumber
-        holder.isSelected = data[position].isSelected
+        val data = getItem(position)
+        holder.bind(data)
         holder.itemView.setOnClickListener {
             if (isOnDeleteMode) {
-                Log.d("DeleteModeClickListener", "done")
-                data[position] =
-                    data[position].copy(isSelected = !holder.isSelected)
-                this.notifyItemChanged(position)
+                val newData = currentList.toMutableList()
+                newData[position] = data.copy(isSelected = !data.isSelected)
+                submitList(newData)
+                notifyItemChanged(position)
             } else {
-
+                val dialog = DataChangeDialog.newInstance(data)
+                dialog.show(fragmentManager,"")
             }
         }
         holder.itemView.background =
-            if (data[position].isSelected) ColorDrawable(Color.YELLOW)
+            if (data.isSelected) ColorDrawable(Color.YELLOW)
             else null
     }
 }
