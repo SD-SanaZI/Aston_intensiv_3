@@ -1,5 +1,6 @@
 package com.example.aston_intensiv_3
 
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -9,7 +10,6 @@ import androidx.annotation.IdRes
 import androidx.recyclerview.widget.RecyclerView
 import com.example.aston_intensiv_3.data.PersonData
 import com.example.aston_intensiv_3.data.TelephoneData
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -31,10 +31,10 @@ class MainActivity : AppCompatActivity(), DataChangeDialog.DialogListener {
         var data = getOnCreateData()
 
         if (savedInstanceState != null){
-            val str = savedInstanceState.getString(TELEPHONE_DATA_LIST_KEY)
-            data = Gson().fromJson(str, TelephoneDataList::class.java).list.toMutableList()
+            data = getDataFromSaveInstanceState(savedInstanceState)
             isOnDeleteMode = savedInstanceState.getBoolean(IS_ON_DELETE_MOSE_KEY)
         }
+
         adapter = TelephoneAdapter(supportFragmentManager)
         adapter.submitList(data)
         recycler.adapter = adapter
@@ -66,8 +66,21 @@ class MainActivity : AppCompatActivity(), DataChangeDialog.DialogListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(TELEPHONE_DATA_LIST_KEY, Gson().toJson(TelephoneDataList(adapter.currentList.toMutableList())))
+        outState.putSerializable(TELEPHONE_DATA_LIST_KEY, TelephoneDataList(adapter.currentList))
         outState.putBoolean(IS_ON_DELETE_MOSE_KEY,isOnDeleteMode)
+    }
+
+    private fun getDataFromSaveInstanceState(savedInstanceState:  Bundle):  MutableList<TelephoneData> {
+        val telephoneDataList =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getSerializable(TELEPHONE_DATA_LIST_KEY, TelephoneDataList::class.java)
+            } else {
+                savedInstanceState.getSerializable(TELEPHONE_DATA_LIST_KEY)
+            } as TelephoneDataList?
+        if (telephoneDataList != null)
+            return telephoneDataList.list.toMutableList()
+        else
+            throw Exception("Null TelephoneDataList")
     }
     private fun updateButtonDisposing(){
         if (isOnDeleteMode){
