@@ -25,7 +25,6 @@ class DataChangeDialog: DialogFragment() {
             val dialog = DataChangeDialog()
             val bundle = Bundle()
             bundle.putSerializable(TELEPHONE_DATA_KEY,data)
-            //bundle.putString(TELEPHONE_DATA_KEY,Gson().toJson(data))
             dialog.arguments = bundle
             return dialog
         }
@@ -41,7 +40,6 @@ class DataChangeDialog: DialogFragment() {
             } else {
                 bundle.getSerializable(TELEPHONE_DATA_KEY) as TelephoneData
             }
-            //Gson().fromJson(arguments?.getString(TELEPHONE_DATA_KEY),TelephoneData::class.java)
             val name = view.findViewById<EditText>(R.id.nameEdit)
             val surname = view.findViewById<EditText>(R.id.surnameEdit)
             val telephoneNumber = view.findViewById<EditText>(R.id.telephoneNumberEdit)
